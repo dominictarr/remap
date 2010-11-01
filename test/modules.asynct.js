@@ -136,5 +136,45 @@ exports ['modules can be given a new cache to load into'] = function (test){
     test.strictEqual(modules2.moduleCache,cache,"modules.useCache(X).moduleCache === X" )
     test.strictEqual(require3.cache,cache,"modules.useCache(X).makeRequire().cache === X" )
     
+    //reload same twice my useing a different cache.
+    var cache1 = {}
+      , cache2 = {}
+      , a1 = modules.useCache(cache1).makeRequire(module)('./.examples/a')
+      , a2 = modules.useCache(cache2).makeRequire(module)('./.examples/a')
+
+      //modules
+      test.equal(cache1[require.resolve('./.examples/a')].exports,a1,"should load module into right cache")
+      test.equal(cache2[require.resolve('./.examples/a')].exports,a2,"should load module into right cache 2")
+
     test.finish();
+}
+
+exports ['modules should load children into the same cache'] = function (test){
+  var cache = {}
+    , modules2 = modules.useCache(cache)
+    , require2 = modules.makeRequire(module)
+    , b = require2('./.examples/b')
+    
+  test.equal(b.b(),"B is for Banana")
+  test.equal(b.next(),"C is for Chicken")
+
+  /*
+    check the children are correct!
+    
+    check that c is in the cache. 
+    and that it's parent is b.
+    
+    ... just resolve('./.examples/b') to get c.
+  */
+  
+  var b_module = cache[require2.resolve('./.examples/b')]
+    , c_module = cache[require2.resolve('./.examples/c')]
+    
+  test.strictEqual(b,b_module.exports)
+  test.strictEqual(b.next,c_module.exports.c)
+    
+  test.strictEqual(b_module,c_module.parent)
+  test.strictEqual(module,b_module.parent)
+  
+  test.finish()
 }
