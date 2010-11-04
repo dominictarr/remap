@@ -1,6 +1,16 @@
+
+  var path = require('path')
+    , resolve = require('./resolve')
+
+  exports.resolveModuleFilename = resolve.resolveModuleFilename
+
 var internalModuleCache = {};
 
 function useCache(moduleCache){
+
+//    var extensions = {};
+  var extensions = require.extensions
+
 
   // Set the environ variable NODE_MODULE_CONTEXTS=1 to make node load all
   // modules in thier own context.
@@ -10,7 +20,6 @@ function useCache(moduleCache){
   if (!moduleCache) { moduleCache = {}; }
 
   var registerExtension = function(){console.log('require.registerExtension() removed. Use require.extensions instead');}
-
 
   // *** module prototype *** 
   //the test of this is at the bottom...
@@ -35,7 +44,8 @@ function useCache(moduleCache){
   */
 
 
-  var natives = process.binding('natives');
+  var natives = process.binding('natives'); //refactor this out to call require
+    // remove this...>>>
 
   function loadNative (id) {
     var m = new Module(id);
@@ -53,30 +63,11 @@ function useCache(moduleCache){
     return loadNative(id).exports;
   }
 
+    // <<< remote this...
 
   // Modules
 
-  var debugLevel = parseInt(process.env["NODE_DEBUG"], 16);
-  function debug (x) {
-    if (debugLevel & 1) {
-      process.binding('stdio').writeError(x + "\n");
-    }
-  }
-
-  var pathFn = process.compile("(function (exports) {" + natives.path + "\n})",
-                               "path");
-  // this is the path module,
-  //since require isn't setup yet you have to load this funny way.
-  var pathModule = createInternalModule('path', pathFn); 
-  var path = pathModule.exports;
-  
-  function createInternalModule (id, constructor) {//only for internal node stuff... fs, http, etc.
-    var m = new Module(id);
-    constructor(m.exports);
-    m.loaded = true;
-    internalModuleCache[id] = m;
-    return m;
-  };
+  var debug = require('./common').debug
 
 
   // The paths that the user has specifically asked for.  Highest priority.
@@ -86,138 +77,8 @@ function useCache(moduleCache){
 
     resolving modules... START
   */
-  var modulePaths = [];
-  if (process.env.NODE_PATH) {
-    modulePaths = process.env.NODE_PATH.split(":");
-  }
-
-  // The default global paths that are always checked.
-  // Lowest priority.
-  var defaultPaths = [];
-  if (process.env.HOME) {
-    defaultPaths.push(path.join(process.env.HOME, ".node_modules"));
-    defaultPaths.push(path.join(process.env.HOME, ".node_libraries"));
-  }
-  defaultPaths.push(path.join(process.execPath, "..", "..", "lib", "node"));
-
-  var extensions = {};
-
-  // Which files to traverse while finding id? Returns generator function.
-  function traverser (id, dirs) {
-    var head = [], inDir = [], dirs = dirs.slice(),
-        exts = Object.keys(extensions);
-    return function next () {
-      var result = head.shift();
-      if (result) { return result; }//on first call result will be undefined
-
-      var gen = inDir.shift();
-      if (gen) { head = gen(); return next(); }//also null first time
-
-      var dir = dirs.shift();//not necessarily null.
-      if (dir !== undefined) {
-        function direct (ext) { return path.join(dir, id + ext); }
-        function index (ext) { return path.join(dir, id, 'index' + ext); }
-        inDir = [
-          function () { return exts.map(direct); },
-          function () { return exts.map(index); }
-        ];
-        /*
-        head will be assigned here, 
-        so on second call head will be ok, 
-        and inDir will be ok, so after that call,
-        head will have ext.length values,
-        if you get through all of those,
-        gen will be called again, and you'll have ext values.
-        
-        so it only actually builds the list of possible paths as it goes
-        doing a minimal amount of string and array manip, unless it's necessary
-        
-        the same could be done with two nested for in loops.
-        */
-        head = [path.join(dir, id)];
-        return next();
-      }
-    };
-  }
-
-  // traverser is only called from findModulePath
-  function findModulePath (request, paths) {
-    var nextLoc = traverser(request, paths);
-
-    var fs = requireNative('fs');
-
-    var location, stats;
-    while (location = nextLoc()) {
-      try { stats = fs.statSync(location); } catch(e) { continue; }
-      if (stats && !stats.isDirectory()) return location;
-    }
-    return false;
-  }
-  //who calls findModulePath? only resolveModuleFilename
 
 
-/*
-  modulePathWalk is a little strange... i havn't seen anyone using node_modules directories.
-  it has the effect of adding ./node_modules to the path, ahead of the default paths.
-
-*/
-  function modulePathWalk (parent) {
-    if (parent._modulePaths) return parent._modulePaths;
-    var p = parent.filename.split("/");
-    var mp = [];
-    while (undefined !== p.pop()) {
-      mp.push(p.join("/")+"/node_modules");
-    }
-    return parent._modulePaths = mp;
-  }
-
-  // sync - no i/o performed
-  function resolveModuleLookupPaths (request, parent) {
-
-    if (natives[request]) return [request, []];
-
-    if (request.charAt(0) === '/') {
-      return [request, ['']];
-    }
-
-    var start = request.substring(0, 2);
-    if (start !== "./" && start !== "..") {
-      var paths = modulePaths.concat(modulePathWalk(parent)).concat(defaultPaths);
-      return [request, paths];//the more interesting case... search through the path.
-    }
-
-    // Is the parent an index module?
-    // We can assume the parent has a valid extension,
-    // as it already has been accepted as a module.
-        var isIndex        = /^index\.\w+?$/.test(path.basename(parent.filename)),//check whether parent.filename is index.[EXTENSION]
-        parentIdPath   = isIndex ? parent.id : path.dirname(parent.id),//the name that was require(name) to get parent module.
-        id             = path.join(parentIdPath, request);//absolute path from the relative one.
-        //if parent is an index, then it's id will be the name of the directory it is in.
-        //and since it is relative, there is only be extentions.length places to look for the new file.
-
-    // make sure require('./path') and require('path') get distinct ids, even
-    // when called from the toplevel js file
-    if (parentIdPath === '.' && id.indexOf('/') === -1) {
-      id = './' + id;
-    }
-    debug("RELATIVE: requested:" + request + " set ID to: "+id+" from "+parent.id);
-    return [id, [path.dirname(parent.filename)]];
-  }
-  exports.resolveModuleFilename = resolveModuleFilename
-  function resolveModuleFilename (request, parent) {
-    if (natives[request]) return [request, request];//fs http net, etc.
-    var resolvedModule = resolveModuleLookupPaths(request, parent),
-        id             = resolvedModule[0],
-        paths          = resolvedModule[1];
-
-    // look up the filename first, since that's the cache key.
-    debug("looking for " + JSON.stringify(id) + " in " + JSON.stringify(paths));
-    var filename = findModulePath(request, paths);
-    if (!filename) {
-      throw new Error("Cannot find module '" + request + "'");
-    }
-    return [id, filename];
-  }
 
 /*
   resolve modules ends...
@@ -225,17 +86,10 @@ function useCache(moduleCache){
 
 */
 
-  exports.loadModule  = loadModule
+  exports.loadResolvedModule  = loadResolvedModule
   
-  function loadModule (request, parent, wrapper) {
-    debug("loadModule REQUEST  " + (request) + " parent: " + parent.id + " wrapper: " + wrapper);
-
-    var resolved = resolveModuleFilename(request, parent);
-    var id = resolved[0];
-    var filename = resolved[1];
-
-    // With natives id === request
-    // We deal with these first
+  function loadResolvedModule (id,filename,parent,wrapper){
+    // remote this...>>>
     var cachedNative = internalModuleCache[id];
     if (cachedNative) {
       return cachedNative;
@@ -247,24 +101,42 @@ function useCache(moduleCache){
 
     var cachedModule = moduleCache[filename];
     if (cachedModule) return cachedModule;
+    // <<< remote this...
     
-    /*
-      possibly, the way to do reloading is to use a special cache.
-      rather than delete the reloaded module from the cache.
-    
-    */
-
     var module = new Module(id, parent);
+
     moduleCache[filename] = module;
     module.requireWrapper = wrapper;//intercepts creation of require so it can me remapped.
     module.load(filename);
+
     return module;
+  }
+
+  exports.loadModule  = loadModule
+  
+  function loadModule (request, parent, wrapper) {
+   // console.log("loadModule REQUEST  " + (request) + " parent: " + parent.id + " wrapper: " + wrapper);
+
+    var resolved = resolve.resolveModuleFilename(request, parent);
+    var id = resolved[0];
+    var filename = resolved[1];
+    //console.log("           RESOLVED  " + (id) + " filename: " + filename );
+
+    // With natives id === request
+    // We deal with these first
+    
+    return loadResolvedModule (id,filename,parent,wrapper)
   };
 
-/*  function loadModule (request, parent, wrapper) {
-    return loadModule2(request, parent, wrapper).exports;
+  function loadModuleExports (request, parent, wrapper) {
+
+    if (natives[request]) {//usually, we want to load these from the main cache.
+      return require(request)
+    }
+  
+    return loadModule(request, parent, wrapper).exports;
   };
-*/
+
   
 //resolveModuleFilename was here. moved into resolvein module section
 
@@ -278,7 +150,6 @@ function useCache(moduleCache){
     /*
       finish loading the module with the function for loading that extension type
       .. if .js it will call _compile()
-    
     */
 
     var extension = path.extname(filename) || '.js'; 
@@ -295,47 +166,25 @@ function useCache(moduleCache){
   }
 
   exports.makeRequire = makeRequire
+    //modify loadModuleExports() to call require.resolve so that you can just modify that to get a change.
   
-  function makeRequire(self){//also pass in mapping? or a function which may modify require...
+  function makeRequire(self){
     function require (path) {
-      return loadModule(path, self,self.wrapRequire).exports;
-    }
-    /*
-      which would need to be passed loadModule, 
-      and assigned to the new Module so that _compile 
-      can see it, after the extension method is called...
-      
-      hang on, if it is a property of a Module then loadModule can already see it
-      since self is a Module.
-      
-      you could just create a new module, and then assign it a requireWrapper.
-      
-//      loadModule will copy self.requireWrapper to the new module 
-      the Module constructor will copy requireWrapper from it's parent.
-      
-      or rather, will it need a copy method? (so it can decend the hierachy?)
-    NO. in moduleWrapper this will -> the module, and so will know the parent,
-    so it will be able to make a decision about what to copy.
-      
-      so to get started,
-      you create a module2 = new Module, assign it's wrapper, 
-      //loadModule(path,module2)
-      
-      hmm, maybe should pass requireWrapper into load module.
-      
-      then it is just
-      modules = require('modules')
-      modules.loadModule('id',module,wrapper).exports
-      that assigns the wrapper to the module,
-      then _compile calls it. which also gets to (re)define what it assigns to 
-      the next require in submodules...
+      /*
+        i'm compromising the design to keep the old interface.
+        better to add a function that returns [id,filename]
+      */
 
-      yes that will work.
-    */
-    require.resolve = function (request) {
-      return resolveModuleFilename(request, self)[1];
+      var id = resolve.resolveModuleId(path,self)
+        , filename = require.resolve(path)
+        
+      return loadResolvedModule (id,filename,self,self.requireWrapper).exports
+//      return loadModuleExports(path, self,self.wrapRequire);//wrapRequire is the makeRequire which will be assigned to sub modules.
     }
-    require.paths = modulePaths;
+    require.resolve = function newResolve (request) {
+      return resolve.resolveModuleFilename(request, self)[1];
+    }
+    require.paths = resolve.modulePaths;
     require.main = process.mainModule;
     // Enable support to add extra extension types
     require.extensions = extensions;
@@ -352,7 +201,7 @@ function useCache(moduleCache){
     content = content.replace(/^\#\!.*/, '');
 
     
-    var require = self.requireWrapper ? self.requireWrapper(makeRequire(self)) : makeRequire(self);
+    var require = self.requireWrapper ? self.requireWrapper(makeRequire(self),self) : makeRequire(self);
 
     var dirname = path.dirname(filename);
 
@@ -416,7 +265,7 @@ function useCache(moduleCache){
 
   // Native extension for .js
   extensions['.js'] = function (module, filename) {
-    var content = requireNative('fs').readFileSync(filename, 'utf8');
+    var content = require('fs').readFileSync(filename, 'utf8');
     module._compile(content, filename);
   };
 
