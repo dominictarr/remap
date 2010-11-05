@@ -2,13 +2,13 @@
   var path = require('path')
     , resolve = require('./resolve')
 
-  exports.resolveModuleFilename = resolve.resolveModuleFilename
 
 var internalModuleCache = {};
 
 function useCache(moduleCache){
 
 //    var extensions = {};
+  var exports = {}
   var extensions = require.extensions
 
 
@@ -23,6 +23,7 @@ function useCache(moduleCache){
 
   // *** module prototype *** 
   //the test of this is at the bottom...
+  exports.resolveModuleFilename = resolve.resolveModuleFilename
   exports.Module = Module
   function Module (id, parent) {
     this.id = id;
@@ -40,9 +41,7 @@ function useCache(moduleCache){
   
   /*
     *** some stuff for handling native modules ***
-  
   */
-
 
   var natives = process.binding('natives'); //refactor this out to call require
     // remove this...>>>
@@ -69,44 +68,28 @@ function useCache(moduleCache){
 
   var debug = require('./common').debug
 
-
-  // The paths that the user has specifically asked for.  Highest priority.
-  // This is what's hung on require.paths.
-  /*
-  $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
-    resolving modules... START
-  */
-
-
-
-/*
-  resolve modules ends...
-  $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
-*/
-
   exports.loadResolvedModule  = loadResolvedModule
   
-  function loadResolvedModule (id,filename,parent,wrapper){
+  function loadResolvedModule (id,filename,parent,makeR){
     // remote this...>>>
     var cachedNative = internalModuleCache[id];
     if (cachedNative) {
       return cachedNative;
     }
     if (natives[id]) {
-      debug('load native module ' + request);
+      debug('load native module ' + id);
       return loadNative(id);
     }
 
     var cachedModule = moduleCache[filename];
+    console.log("cached?:" + (!!cachedModule));
     if (cachedModule) return cachedModule;
     // <<< remote this...
     
     var module = new Module(id, parent);
 
     moduleCache[filename] = module;
-    module.requireWrapper = wrapper;//intercepts creation of require so it can me remapped.
+    module.makeRequire = makeR;//intercepts creation of require so it can me remapped.
     module.load(filename);
 
     return module;
@@ -114,27 +97,25 @@ function useCache(moduleCache){
 
   exports.loadModule  = loadModule
   
-  function loadModule (request, parent, wrapper) {
-   // console.log("loadModule REQUEST  " + (request) + " parent: " + parent.id + " wrapper: " + wrapper);
+  function loadModule (request, parent, makeR) {
 
     var resolved = resolve.resolveModuleFilename(request, parent);
     var id = resolved[0];
     var filename = resolved[1];
-    //console.log("           RESOLVED  " + (id) + " filename: " + filename );
 
     // With natives id === request
     // We deal with these first
     
-    return loadResolvedModule (id,filename,parent,wrapper)
+    return loadResolvedModule (id,filename,parent,makeR)
   };
 
-  function loadModuleExports (request, parent, wrapper) {
+  function loadModuleExports (request, parent, makeR) {
 
     if (natives[request]) {//usually, we want to load these from the main cache.
       return require(request)
     }
   
-    return loadModule(request, parent, wrapper).exports;
+    return loadModule(request, parent, makeR).exports;
   };
 
   
@@ -178,8 +159,7 @@ function useCache(moduleCache){
       var id = resolve.resolveModuleId(path,self)
         , filename = require.resolve(path)
         
-      return loadResolvedModule (id,filename,self,self.requireWrapper).exports
-//      return loadModuleExports(path, self,self.wrapRequire);//wrapRequire is the makeRequire which will be assigned to sub modules.
+      return loadResolvedModule (id,filename,self,self.makeRequire).exports
     }
     require.resolve = function newResolve (request) {
       return resolve.resolveModuleFilename(request, self)[1];
@@ -193,6 +173,24 @@ function useCache(moduleCache){
     require.cache = moduleCache;
     return require;
   }
+  
+
+  //make a makeRequire function with a function that modify the output of require.
+  
+  exports.makeWrapRequire = makeWrapRequire
+
+  function makeWrapRequire (wrap){//adapter to use old interface...
+    return function (this_module){
+      return wrap(makeRequire(this_module),this_module)
+    }
+  }
+
+  /*
+    what is contextLoad for?
+    
+    might it be useful to be able to load in a context on a per-file basis?
+ 
+  */
 
   // Returns exception if any
   Module.prototype._compile = function (content, filename) {
@@ -200,8 +198,7 @@ function useCache(moduleCache){
     // remove shebang
     content = content.replace(/^\#\!.*/, '');
 
-    
-    var require = self.requireWrapper ? self.requireWrapper(makeRequire(self),self) : makeRequire(self);
+    var require = self.makeRequire ? self.makeRequire(self) : makeRequire(self)
 
     var dirname = path.dirname(filename);
 

@@ -59,7 +59,7 @@ exports['modules.loadModule accepts a function which is assigned to module and c
   var a = modules.loadModule('./.examples/a',module).exports
     , a1 = require2('./.examples/a')
     , inside = null
-    , a2 = modules.loadModule('./.examples/for_modules.asynct.js',module,wrapRequire).exports
+    , a2 = modules.loadModule('./.examples/for_modules.asynct.js',module,modules.makeWrapRequire(wrapRequire)).exports
     
     test.strictEqual(a,a1
       , "modules.loadModule(X,module) will return the same as module.makeRequire(module).require(X)")
@@ -67,10 +67,10 @@ exports['modules.loadModule accepts a function which is assigned to module and c
     test.strictEqual(inside.exports,a2)
     test.finish()
 
-    function wrapRequire (r){
+    function wrapRequire (r,this_module){
       looksLikeRequire(test,r)
     
-      inside = this
+      inside = this_module
       return r
     }
 
@@ -192,7 +192,7 @@ exports ['modules can be given a new cache to load into'] = function (test){
 exports ['modules should load children into the same cache'] = function (test){
   var cache = {}
     , modules2 = modules.useCache(cache)
-    , require2 = modules.makeRequire(module)
+    , require2 = modules2.makeRequire(module)
     , b = require2('./.examples/b')
     
   test.equal(b.b(),"B is for Banana")

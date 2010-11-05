@@ -49,9 +49,9 @@ specify a regular expression, or some sort of wild card to you can redirect a se
 remap to git repositories.
 */
 
-exports ['provide a new require for submodules'] = function (test){
+/*exports ['provide a new require for submodules'] = function (test){
   test.ok(false,"TEST NOT YET IMPLEMENTED")
   test.finish();
 
-}
+}*/
 

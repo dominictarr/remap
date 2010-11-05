@@ -37,6 +37,10 @@ TEST PLANS:
   instead of calling wrapRequire after it's setup require & properties it passes 
   the functions and then tidies it up.
 
+
+  if instead of wrapRequire, module has a makeRequire function? would that be simpler?
+
+  then, any weird makeRequire you want will have just reassign module.makeRequire
 */
 
 var modules =  require('remap/modules')
@@ -59,30 +63,35 @@ function looksLikeRequire(test,r){
     }
 }
 
+exports ['can wrap the require method for child modules'] = function (test){
+  console.log('TEST: can wrap the require method for child modules')
 
-exports ['can change the require method for child modules'] = function (test){
-  var a = modules.loadModule('./.examples/a',module).exports
+  var cache = {}
+    , modules2 = modules.useCache(cache)
+    , a = modules.loadModule('./.examples/a',module).exports
     , a1 = require2('./.examples/a')
     , inside = null
-    , a2 = modules.loadModule('./.examples/for_modules.asynct',module,wrapRequire).exports
+    , a2 = modules2.loadModule ( './.examples/for_modules.asynct'
+        , module, modules2.makeWrapRequire(wrapRequire) ).exports
     
-    test.strictEqual(a,a1
+    test.strictEqual (a,a1
       , "modules.loadModule(X,module) will return the same as module.makeRequire(module).require(X)")
 
-    test.strictEqual(inside.exports,a2)
-    test.finish()
+    test.strictEqual (inside.exports,a2)
+    test.finish ()
 
-    function wrapRequire (r){
-      looksLikeRequire(test,r)
-    
-      inside = this
+    function wrapRequire (r,module){
+      console.log("MODULE:" + module)
+      looksLikeRequire (test,r)
+      test.ok(module,"expected a module")
+      inside = module
       return r
     }
 }
 
 exports ['can change which module is loaded by redefining resolve'] = function (test){
   var cache = {}
-    , __modules = modules.useCache(cache)
+    , __modules = modules.useCache (cache)
 //    , a = modules.loadModule('./.examples/a',module,wrapRequire).exports
     , a1  = require('./.examples/a')
     , newResolveCalled = false
@@ -100,10 +109,10 @@ exports ['can change which module is loaded by redefining resolve'] = function (
       refactor this to use a different function to resolve, which returns [id,filename]
       and have require call it.
     */
-    test.ok(newResolveCalled,"require.resolve should be called when require is called")
+    test.ok (newResolveCalled,"require.resolve should be called when require is called")
 
-    test.equal(a1.a(),"A is for Apple")
-    test.equal(a2.a(),"A is for Aardvark")
+    test.equal (a1.a(),"A is for Apple")
+    test.equal (a2.a(),"A is for Aardvark")
     
     test.finish()
  
@@ -258,7 +267,7 @@ exports ['replace require for a child module'] = function (test){
         , filename = newRequire.resolve(path)
         console.log("load:(" + parent.id + ").require(" + path + ")")
         listener(path)
-      return modules.loadResolvedModule (id,filename,parent,wrapRequire).exports
+      return modules.loadResolvedModule (id,filename,parent,modules.makeWrapRequire(wrapRequire)).exports
     } 
   } 
   
