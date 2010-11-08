@@ -1,7 +1,7 @@
 var modules =  require('remap/modules')
   , require2 = modules.makeRequire(module)
   , inspect = require('util').inspect
-
+  , helper = require('./.helper/helper')
 ; // a semi-colon for Ryan Gahl
   
 exports['Require2 can load a module'] = function (test){
@@ -15,20 +15,7 @@ exports['Require2 can load a module'] = function (test){
   test.finish()
 }
 
-function looksLikeRequire(test,r){
-  var types = 
-    { resolve: 'function'
-    , paths:  'object'
-    , extensions: 'object'
-    , registerExtension: 'function'
-    , cache:   'object'
-    , main:  'object'
-    }
-    
-    for (i in types){
-      test.equal(typeof r[i], types[i], "typeof :'" + r + '.'  + i + ' should be: ' + types[i] + ', but was: ' +  typeof r[i])
-    }
-}
+
 
 exports['loads a module with different module, require'] = function (test){
 
@@ -41,7 +28,7 @@ exports['loads a module with different module, require'] = function (test){
   test.ok(mirror.__filename)
   test.ok(mirror.__dirname)
 
-  looksLikeRequire(test,mirror.require)
+  helper.looksLikeRequire(mirror.require,test)
 
   test.notEqual(mirror,mirror2
     , "require 2 can load another instance of a module")
@@ -68,7 +55,7 @@ exports['modules.loadModule accepts a function which is assigned to module and c
     test.finish()
 
     function wrapRequire (r,this_module){
-      looksLikeRequire(test,r)
+      helper.looksLikeRequire(r,test)
     
       inside = this_module
       return r
@@ -162,7 +149,7 @@ exports ['modules can be given a new cache to load into'] = function (test){
     var cache = {}
     modules2 = modules.useCache(cache)
     require3 = modules2.makeRequire(module)
-    looksLikeRequire(test,require3)
+    helper.looksLikeRequire(require3,test)
     
     test.notStrictEqual(require3.cache,require2.cache
       ,"will have a different cache from another moduels.makeRequire().cache" )

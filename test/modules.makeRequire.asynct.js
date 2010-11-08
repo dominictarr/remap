@@ -49,4 +49,10 @@ exports ['can change the require method for child modules'] = function (test){
   A new modules function which takes function arguments for require, resolveModule, and makeRequire
   
   maybe refactor all the require stuff into another module?
+  
+  mamake(resolve,make,require){
+    
+  }
 */
+
+

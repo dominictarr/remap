@@ -69,7 +69,7 @@ function useCache(moduleCache){
   var debug = require('./common').debug
 
   exports.loadResolvedModule  = loadResolvedModule
-  
+
   function loadResolvedModule (id,filename,parent,makeR){
     // remote this...>>>
     var cachedNative = internalModuleCache[id];
@@ -164,6 +164,7 @@ function useCache(moduleCache){
     require.resolve = function newResolve (request) {
       return resolve.resolveModuleFilename(request, self)[1];
     }
+
     require.paths = resolve.modulePaths;
     require.main = process.mainModule;
     // Enable support to add extra extension types
