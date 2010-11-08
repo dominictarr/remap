@@ -15,20 +15,20 @@ this is still very hacky!
 thanks for reading.
 
 
-------------------------
+|||||||||||||||||||
 
 next: i want to refactor out useCache, as new modules functions are created each time you call modules.useCache({})
 
 modules and make_require are both depending on each other, and they both need to share the cache.
 
-maybe they should be in just one file?
-  - modules is already too large.
-maybe cache should be passed around as arguments?
-  - that doesn't feel right either... there must be a better answer.
-  - maybe there is a more natural split between modules and make_require...
-    what if make_require was loading
+##maybe they should be in just one file?##
+- modules is already too large.
+##maybe cache should be passed around as arguments?##
+- that doesn't feel right either... there must be a better answer.
+- maybe there is a more natural split between modules and make_require...
+- what if 'make_require' was 'loading' ?
 
-YUSS! if i move the loadModule functions out of modules this tangle should sort itself.
+##YUSS! if i move the loadModule functions out of modules this tangle should sort itself.##
 
 
 /*
