@@ -21,7 +21,7 @@ function looksLikeRequire(test,r){
 }
 
 exports ['can change the require method for child modules'] = function (test){
- 
+
   var modules2 = modules.useCache({})
     , require2 = modules2.makeRequire(module)
     , a = modules2.loadModule('./.examples/a',module).exports
@@ -32,12 +32,13 @@ exports ['can change the require method for child modules'] = function (test){
     test.strictEqual(a,a1
       , "modules.loadModule(X,module) will return the same as module.makeRequire(module).require(X)")
 
-    test.strictEqual(inside.exports,a2)
+    test.strictEqual(inside.exports,a2, "this inside makeRequire should be the new module")
     test.finish()
 
     function makeRequire (m){
-      var r = modules.makeRequire (module)
+      var r = modules.makeRequire (module)//this is a question about the default cache...
       test.equal (m.parent,module)
+      test.equal (this,m)
       looksLikeRequire (test,r)
     
       inside = this

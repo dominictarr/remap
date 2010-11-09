@@ -3,6 +3,7 @@ var modules =  require('remap/modules')
   , inspect = require('util').inspect
   , helper = require('./.helper/helper')
 ; // a semi-colon for Ryan Gahl
+var Xexports = {}
   
 exports['Require2 can load a module'] = function (test){
 
@@ -24,9 +25,12 @@ exports['loads a module with different module, require'] = function (test){
     , mirror2 = require('./.examples/mirror')
     
   test.ok(mirror.require)
-  test.ok(mirror.module)
+  console.log("MIRROR")
+  console.log(mirror)
+  
   test.ok(mirror.__filename)
   test.ok(mirror.__dirname)
+  test.ok(mirror.module)
 
   helper.looksLikeRequire(mirror.require,test)
 
@@ -151,13 +155,13 @@ exports ['modules can be given a new cache to load into'] = function (test){
     require3 = modules2.makeRequire(module)
     helper.looksLikeRequire(require3,test)
     
-    test.notStrictEqual(require3.cache,require2.cache
-      ,"will have a different cache from another moduels.makeRequire().cache" )
-    
     test.strictEqual(modules2.moduleCache,cache 
       ,"modules.useCache(X).moduleCache === X" )
     test.strictEqual(require3.cache,cache
       ,"modules.useCache(X).makeRequire().cache === X" )
+    test.notStrictEqual(require3.cache,require2.cache
+      ,"will have a different cache from another moduels.makeRequire().cache" )
+    
     
     //reload same twice my useing a different cache.
     var cache1 = {}
@@ -176,6 +180,19 @@ exports ['modules can be given a new cache to load into'] = function (test){
     test.finish()
 }
 
+exports ['modules makeRequire().resolve should work like require.resolve'] = function (test){
+  var require2 = modules.makeRequire(module)
+    , tests = ['./.examples/c','remap/test/.examples/c','./.examples/b']
+  
+  tests.forEach(function (e){
+    var a = require2.resolve(e)
+      , b = require.resolve(e)
+    test.equal(a,b,"expected:" + b + " but got " + a)  
+  });
+  test.finish()
+
+}
+
 exports ['modules should load children into the same cache'] = function (test){
   var cache = {}
     , modules2 = modules.useCache(cache)
@@ -185,6 +202,17 @@ exports ['modules should load children into the same cache'] = function (test){
   test.equal(b.b(),"B is for Banana")
   test.equal(b.next(),"C is for Chicken")
 
+  test.equal(modules2.moduleCache,cache)
+  test.equal(require2.cache,cache)
+
+
+    //HERE IS PROBLEM: require2.resolve not working properly.
+    test.equal(require2.resolve('./.examples/c'),require.resolve('./.examples/c')
+      ,"expected: " + require2.resolve('./.examples/c')
+      + " but got: " + require.resolve('./.examples/c')      )
+    test.equal(require2.resolve('./.examples/b'),require.resolve('./.examples/b'))
+
+
   /*
     check the children are correct!
     
@@ -193,9 +221,18 @@ exports ['modules should load children into the same cache'] = function (test){
     
     ... just resolve('./.examples/b') to get c.
   */
+
+  /*
+    for some reason, b.js is not loading into cache.
+    
+    my plan is to make a mark on the cache, 
+    and then check for as we go down the rabit hole, untill we find where it falls off.
+  
+  */
   
   var b_module = cache[require2.resolve('./.examples/b')]
     , c_module = cache[require2.resolve('./.examples/c')]
+    console.log(cache)
     
   test.strictEqual(b,b_module.exports)
   test.strictEqual(b.next,c_module.exports.c)
@@ -205,7 +242,7 @@ exports ['modules should load children into the same cache'] = function (test){
   
   test.finish()
 }
-exports ['modules recreate thier "globals" for each cache'] = function (test){
+Xexports ['modules recreate thier "globals" for each cache'] = function (test){
   var o = {}
     , require2 = modules.useCache({}).makeRequire(module)
   o.require = require('./.examples/one_random')
@@ -217,7 +254,7 @@ exports ['modules recreate thier "globals" for each cache'] = function (test){
   
   test.finish();
 }
-exports ['modules can load native modules'] = function (test){
+Xexports ['modules can load native modules'] = function (test){
   var o = {}
     , require2 = modules.useCache({}).makeRequire(module)
   fs = require('fs')
