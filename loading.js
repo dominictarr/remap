@@ -14,37 +14,22 @@ var internalModuleCache = {}
   exports.makeMake = makeMake
   exports.makeRequire = makeRequire
 
-  exports.useCache = useCache
-
-  function useCache(cache){
-    var newExports = {}
-    newExports.useCache = useCache
-    newExports.mamake = function (resolve,load,make){
-      return  mamake (resolve,load,make,cache)
-    }
-    newExports.makeRequire = function (module,tools){
-      return makeRequire(module,initTools(tools))
-    }
-    newExports.makeMake = function (tools){
-      return makeMake(initTools(tools))
-    }
-    
-
-    function initTools(tools){
-      tools = tools || {}
-      tools.cache = tools.cache || cache
-      return tools
-    }
-
-    return newExports
-  }
+  //exports.useCache = useCache
 
   var natives = process.binding('natives'); //refactor this out to call require
     // remove this...>>>
 
   function loadNative (id) {
+    console.log("loadNative")
+    console.log(id)
+    
     var m = new Module(id);
     internalModuleCache[id] = m;
+    m.require = makeRequire(m,{cache: require.cache})
+    /*= function (request){
+      console.log("LOAD NATIVE!" + id)
+      console.log(request)
+    }*/
     var e = m._compile(natives[id], id+".js");
     if (e) throw e; // error compiling native module
     return m;
@@ -62,7 +47,16 @@ var internalModuleCache = {}
        ====================== load modules ===========================
 */
 
+  exports.loadModule  = loadModule
   exports.loadResolvedModule  = loadResolvedModule
+  
+  function loadModule (request, parent, makeR, moduleCache) {
+    var resolved = resolve.resolveModuleFilename(request, parent);
+    var id = resolved[0];
+    var filename = resolved[1];
+
+    return loadResolvedModule (id, filename, parent, makeR, moduleCache)
+  };
 
   function loadResolvedModule (id,filename,parent,makeR,moduleCache){
     //moduleCache = moduleCache || cache
@@ -94,28 +88,6 @@ var internalModuleCache = {}
     return module;
   }
 
-  exports.loadModule  = loadModule
-  
-  function loadModule (request, parent, makeR, moduleCache) {
-    var resolved = resolve.resolveModuleFilename(request, parent);
-    var id = resolved[0];
-    var filename = resolved[1];
-
-    // With natives id === request
-    // We deal with these first
-    
-    return loadResolvedModule (id, filename, parent, makeR, moduleCache)
-  };
-
-  function loadModuleExports (request, parent, makeR,moduleCache) {
-
-    if (natives[request]) {//usually, we want to load these from the main cache.
-      return require(request)
-    }
-  
-    return loadModule(request, parent, makeR,moduleCache).exports;
-  };
-
 /*
        ====================== load modules ===========================
 */
@@ -144,7 +116,7 @@ var internalModuleCache = {}
       tools.load = tools.load || defaultLoad //(id,filename,parent,makeR,moduleCache)
       tools.make = tools.make || makeMake({cache: tools.cache})
 //      tools.cache = tools.cache || cache
-    console.log("CACHE (makeRequire):" + tools.cache)
+      console.log("CACHE (makeRequire):" + tools.cache)
       assert.ok(tools.cache,"makeRequire needed a tools.cache")
       assert.ok(tools.make,"makeRequire needed a tools.make")
 
@@ -170,7 +142,3 @@ var internalModuleCache = {}
         return newRequire;
       }
     }
-    
-//    return exports
-//}
-//module.exports = useCache({})

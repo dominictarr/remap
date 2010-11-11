@@ -1,7 +1,7 @@
 
 var path = require('path')
   , resolve = require('./resolve')
-  , make_require = require('./make_require')
+  , make_require = require('./loading')
   , assert = require('assert')
 
   var registerExtension = function(){console.log('require.registerExtension() removed. Use require.extensions instead');}
@@ -9,7 +9,7 @@ var path = require('path')
   exports.resolveModuleFilename = resolve.resolveModuleFilename
   exports.useCache = useCache
 
-function useCache(moduleCache){
+function useCache(moduleCache) {
   
   var newExports = {}
   for (i in exports){
@@ -18,20 +18,31 @@ function useCache(moduleCache){
   newExports.loadModule = function (request,parent,make) {
     return make_require.loadModule(request,parent,make,moduleCache)
   }
-  newExports.makeRequire = function (parent,tools) {
-    tools = tools || {}
-    tools.cache = moduleCache
-    console.log('WARPPED MAKE REQUIRE')    
-    assert.ok(tools.cache)
-    return make_require.makeRequire(parent,tools)
+  newExports.defaultLoad = function (id,filename,parent,make) {
+    return make_require.defaultLoad(id,filename,parent,make,moduleCache)
+  }
+  newExports.mamake = function (resolve,load,make){
+    return  make_require.mamake (resolve,load,make,moduleCache)
+  }
+  newExports.makeRequire = function (module,tools){
+    return make_require.makeRequire(module,initTools(tools))
+  }
+  newExports.makeMake = function (tools){
+    return make_require.makeMake(initTools(tools))
   }
 
-  function uncache(module){
+  function initTools(tools){
+    tools = tools || {}
+    tools.cache = tools.cache || moduleCache
+    return tools
+  }
+
+  newExports.uncache = function (module) {
     delete moduleCache[module.filename]
   }
 
-  newExports.uncache = uncache
   newExports.moduleCache = moduleCache
+  
   newExports.makeWrapRequire = makeWrapRequire
 
   function makeWrapRequire (wrap){//adapter to use old interface...

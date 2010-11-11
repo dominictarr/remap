@@ -5,6 +5,7 @@ module.exports = Module
     , path = require('path')
     , debug = require('./common').debug
     , contextLoad = false;
+    
   if (+process.env["NODE_MODULE_CONTEXTS"] > 0) contextLoad = true;
   var Script;
 

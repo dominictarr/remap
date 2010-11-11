@@ -2,17 +2,15 @@ var modules =  require('remap/modules')
   , require2 = modules.makeRequire(module)
   , inspect = require('util').inspect
   , helper = require('./.helper/helper')
+
 ; // a semi-colon for Ryan Gahl
-var Xexports = {}
+
+//var Xexports = {}
   
 exports['Require2 can load a module'] = function (test){
 
   var a1 = require2('./.examples/a')
-  /*  , a2 = require2('./.examples/a2')
 
-  test.equal(a1.a(),'A is for Apple')
-  test.equal(a2.a(),'A is for Aardvark')
-*/
   test.finish()
 }
 
@@ -65,30 +63,7 @@ exports['modules.loadModule accepts a function which is assigned to module and c
       return r
     }
 
-      /*
-        here is where you'd modify the behaviour of require.
-        
-        actually, you'll probably just make a whole new makeRequire
-        
-        you could intercept the request and ask for something different
-        
-        also, you could just return something completely different..
-           mock it out...
-
-      *//*
-      
-        hmm, maybe should pass requireWrapper into load module.
-        
-        then it is just
-        modules = require('modules')
-        modules.loadModule('id',module,wrapper).exports
-        that asigns the wrapper to the module,
-        then _compile calls it. which also gets to (re)define what it asigns to 
-        the next require in submodules...
-
-        yes that will work.
-
-        applications of this crazy module:
+      /*  applications of this crazy module:
           1. reroute resolve, so that it loads a different module.
           2. return before calling loadModule, i.e. return a mock instead.
           3. modify module loaded. 
@@ -107,19 +82,11 @@ exports['modules can uncache a loaded module'] = function (test){
     test.strictEqual(a,modules.loadModule(aId,module).exports
       , 'normally modules.loadModule will return the same modules from the cache')
    
-
-//    console.log('LOOKING FOR: ' + a.filename)
-
-  //  console.log('cache: ' + inspect(modules.moduleCache))
-    
-   
     test.ok(modules.moduleCache[a.module.filename]
       , 'should load module into cache')
     
     modules.uncache(a_module)
     a2 = modules.loadModule(aId,module).exports
-
-//    console.log('cache: ' + inspect(require.cache))
 
     test.notStrictEqual(a,a2
       , 'by uncaching you can load a module twice')
@@ -128,23 +95,6 @@ exports['modules can uncache a loaded module'] = function (test){
     test.strictEqual(a.version,a2.version)
     test.strictEqual(a.__filename,a2.__filename)
     
-    //okay, maybe make an uncache method on require? pass it a it resolves it, then uncaches it. 
-    //and IT'S DEPENDANTS...
-    
-    //there is a children property on module, but it doesn't get set.
-    //A. iterate through cache for module.parent === this
-    //B. set children.
-    
-    //all this will surely fuck up singletons. they will be reloaded ... 
-    //remove from parents children also, so that uncached modules gets garbage collected?
-    /*
-    it is probably much better to use a special cache when you'll be reloading.
-    that way, you just throw away the whole cache, and you won't get anything dangling.
-    
-    
-    */
-    //I don't have a test for load of children yet anyway.
-  
     test.finish()
 }
 
@@ -205,34 +155,14 @@ exports ['modules should load children into the same cache'] = function (test){
   test.equal(modules2.moduleCache,cache)
   test.equal(require2.cache,cache)
 
+  test.equal(require2.resolve('./.examples/c'),require.resolve('./.examples/c')
+    ,"expected: " + require2.resolve('./.examples/c')
+    + " but got: " + require.resolve('./.examples/c')      )
+  test.equal(require2.resolve('./.examples/b'),require.resolve('./.examples/b'))
 
-    //HERE IS PROBLEM: require2.resolve not working properly.
-    test.equal(require2.resolve('./.examples/c'),require.resolve('./.examples/c')
-      ,"expected: " + require2.resolve('./.examples/c')
-      + " but got: " + require.resolve('./.examples/c')      )
-    test.equal(require2.resolve('./.examples/b'),require.resolve('./.examples/b'))
-
-
-  /*
-    check the children are correct!
-    
-    check that c is in the cache. 
-    and that it's parent is b.
-    
-    ... just resolve('./.examples/b') to get c.
-  */
-
-  /*
-    for some reason, b.js is not loading into cache.
-    
-    my plan is to make a mark on the cache, 
-    and then check for as we go down the rabit hole, untill we find where it falls off.
-  
-  */
-  
   var b_module = cache[require2.resolve('./.examples/b')]
     , c_module = cache[require2.resolve('./.examples/c')]
-    console.log(cache)
+  console.log(cache)
     
   test.strictEqual(b,b_module.exports)
   test.strictEqual(b.next,c_module.exports.c)
@@ -242,7 +172,7 @@ exports ['modules should load children into the same cache'] = function (test){
   
   test.finish()
 }
-Xexports ['modules recreate thier "globals" for each cache'] = function (test){
+exports ['modules recreate thier "globals" for each cache'] = function (test){
   var o = {}
     , require2 = modules.useCache({}).makeRequire(module)
   o.require = require('./.examples/one_random')
@@ -254,16 +184,10 @@ Xexports ['modules recreate thier "globals" for each cache'] = function (test){
   
   test.finish();
 }
-Xexports ['modules can load native modules'] = function (test){
-  var o = {}
-    , require2 = modules.useCache({}).makeRequire(module)
-  fs = require('fs')
+exports ['modules can load native modules'] = function (test){
+  var require2 = modules.useCache({}).makeRequire(module)
+  fs = require2('fs')
   http = require2('http')
-  
-/*  test.ok(o.require.oneRandom)
-  test.ok(o.require2.oneRandom)
-  test.notEqual(o.require.oneRandom,o.require2.oneRandom)
-  */
   
   test.finish()
 }

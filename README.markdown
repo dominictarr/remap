@@ -17,18 +17,30 @@ thanks for reading.
 
 |||||||||||||||||||
 
-next: i want to refactor out useCache, as new modules functions are created each time you call modules.useCache({})
+next: rewrite make_require to use modules.
 
-modules and make_require are both depending on each other, and they both need to share the cache.
+    I had originally had useCache in both files which was messy.
+    refactored, so cache is passed around in make_require, but wrapped in modules
 
-##maybe they should be in just one file?##
-- modules is already too large.
-##maybe cache should be passed around as arguments?##
-- that doesn't feel right either... there must be a better answer.
-- maybe there is a more natural split between modules and make_require...
-- what if 'make_require' was 'loading' ?
+    i realise now that I wasn't that far off an elegant solution.
+    
+    passing cache every where is ugly too, and modules is basicially an object 
+    (you call a function that creates state) moving Module out was good,
+    
+    but i'll get much nice function arguments for puting it all into an object which i 
+    initialize with cache, module, and makeRequire
+    
+    new Loader(module,cache).setMake(loader.makeRequire())... maybe the gain isn't that great.
+    
+    is that the lesson here? if your passing around the same arguments around
+    a set of functions, encaspulate it with state (i.e, an object)
 
-##YUSS! if i move the loadModule functions out of modules this tangle should sort itself.##
+    eitherway, i'll try using it for something first! and _then_ rewrite it.
+
+    simpler test for make_require
+        
+  
+
 
 
 /*
