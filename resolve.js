@@ -4,21 +4,31 @@
   var debug = require('./common').debug
   var path = require('path')
 
-//  var pathFn = process.compile("(function (exports) {" + natives.path + "\n})",
-  //                             "path");
-  // this is the path module,
-  //since require isn't setup yet you have to load this funny way.
-//  var pathModule = createInternalModule('path', pathFn); 
-//  var path = pathModule.exports;
-  
-/*  function createInternalModule (id, constructor) {//only for internal node stuff... fs, http, etc.
-    var m = new Module(id);
-    constructor(m.exports);
-    m.loaded = true;
-    internalModuleCache[id] = m;
-    return m;
-  };*/
+/*
 
+this could be refactored quite a bit, so you don't have to pass in module 
+(instead pass local dir) ... if it is a relative request
+
+also, allow passing in custom paths,
+
+also, many projects are in this form:
+
+project/
+  lib/
+    project.js
+    project/
+      other.js
+      etc.js
+
+would be handy to handle this automaticially,
+so when request('project'), look in lib, and then find 'project.js'
+when request('project/other') 
+find project/lib/project/other
+
+feels like this may cause some complications, but it may be useful to get
+git forks running automagicially.
+
+*/
 
   var modulePaths = [];
   exports.modulePaths = modulePaths
@@ -35,13 +45,14 @@
   }
   defaultPaths.push(path.join(process.execPath, "..", "..", "lib", "node"));
 
-  var extensions = require.extensions
+  var extensions = Object.keys(require.extensions)
   //  exports.extensions = extensions
 
   // Which files to traverse while finding id? Returns generator function.
-  function traverser (id, dirs) {
+  function traverser (id, dirs,_extensions) {
+    
     var head = [], inDir = [], dirs = dirs.slice(),
-        exts = Object.keys(extensions);
+        exts = _extensions || extensions;
     return function next () {
       var result = head.shift();
       if (result) { return result; }//on first call result will be undefined
@@ -77,8 +88,8 @@
   }
 
   // traverser is only called from findModulePath
-  function findModulePath (request, paths) {
-    var nextLoc = traverser(request, paths);
+  function findModulePath (request, paths,_extensions) {
+    var nextLoc = traverser(request, paths,_extensions);
 
     var fs = require('fs');
 
@@ -90,7 +101,6 @@
     return false;
   }
   //who calls findModulePath? only resolveModuleFilename
-
 
 /*
   modulePathWalk is a little strange... i havn't seen anyone using node_modules directories.
@@ -177,7 +187,7 @@
   }
 
   exports.resolveModuleFilename = resolveModuleFilename
-  function resolveModuleFilename (request, parent) {
+  function resolveModuleFilename (request, parent,_extensions) {
     if (natives[request]) return [request, request];//fs http net, etc.
     var resolvedModule = resolveModuleLookupPaths(request, parent),
         id             = resolvedModule[0],
@@ -185,7 +195,7 @@
 
     // look up the filename first, since that's the cache key.
     debug("looking for " + JSON.stringify(id) + " in " + JSON.stringify(paths));
-    var filename = findModulePath(request, paths);
+    var filename = findModulePath(request, paths,_extensions);
     if (!filename) {
 //      console.log(extensions);
       throw new Error("Cannot find module '" + request + "', from: " + path.dirname(parent.filename));

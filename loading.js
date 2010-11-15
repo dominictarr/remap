@@ -20,8 +20,8 @@ var internalModuleCache = {}
     // remove this...>>>
 
   function loadNative (id) {
-    console.log("loadNative")
-    console.log(id)
+//    console.log("loadNative")
+//    console.log(id)
     
     var m = new Module(id);
     internalModuleCache[id] = m;
@@ -60,7 +60,7 @@ var internalModuleCache = {}
 
   function loadResolvedModule (id,filename,parent,makeR,moduleCache){
     //moduleCache = moduleCache || cache
-    console.log("CACHE (loadResolvedModule):" + moduleCache)
+//    console.log("CACHE (loadResolvedModule):" + moduleCache)
     assert.ok(moduleCache,"loadResolvedModule needs a moduleCache")
     // remote this...>>>
     var cachedNative = internalModuleCache[id];
@@ -73,7 +73,7 @@ var internalModuleCache = {}
     }
 
     var cachedModule = moduleCache[filename];
-    console.log("cached?:" + (!!cachedModule));
+//    console.log("cached?:" + (!!cachedModule));
     if (cachedModule) return cachedModule;
     
     var module = new Module(id, parent);
@@ -81,7 +81,7 @@ var internalModuleCache = {}
     makeR = makeR || makeMake({cache:moduleCache})
 
     moduleCache[filename] = module;
-    console.log("STORE in cache:" + filename);
+//    console.log("STORE in cache:" + filename);
     module.require = makeR.call(module,module);//intercepts creation of require so it can me remapped. called as module, to pass old test.
     module.load(filename);
 
@@ -116,7 +116,7 @@ var internalModuleCache = {}
       tools.load = tools.load || defaultLoad //(id,filename,parent,makeR,moduleCache)
       tools.make = tools.make || makeMake({cache: tools.cache})
 //      tools.cache = tools.cache || cache
-      console.log("CACHE (makeRequire):" + tools.cache)
+//      console.log("CACHE (makeRequire):" + tools.cache)
       assert.ok(tools.cache,"makeRequire needed a tools.cache")
       assert.ok(tools.make,"makeRequire needed a tools.make")
 

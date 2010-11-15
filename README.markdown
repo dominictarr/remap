@@ -17,29 +17,27 @@ thanks for reading.
 
 |||||||||||||||||||
 
-next: rewrite make_require to use modules.
+okay, written a simple multi tester, which takes a test, it's target, and a candidate... 
+it runs the candidate through the test and calls back with the result.
 
-    I had originally had useCache in both files which was messy.
-    refactored, so cache is passed around in make_require, but wrapped in modules
+I'll split this out into another module, which depends on remap
 
-    i realise now that I wasn't that far off an elegant solution.
-    
-    passing cache every where is ugly too, and modules is basicially an object 
-    (you call a function that creates state) moving Module out was good,
-    
-    but i'll get much nice function arguments for puting it all into an object which i 
-    initialize with cache, module, and makeRequire
-    
-    new Loader(module,cache).setMake(loader.makeRequire())... maybe the gain isn't that great.
-    
-    is that the lesson here? if your passing around the same arguments around
-    a set of functions, encaspulate it with state (i.e, an object)
+I'll need a manifest file which defines the targets of each test, 
+(and which test format they use...eventually)
 
-    eitherway, i'll try using it for something first! and _then_ rewrite it.
+and a package.json which defines which tests files need to pass.
 
-    simpler test for make_require
-        
-  
+i.e something somewhere needs to say that natural2 should pass natural.asynct & natural.random.asynct
+
+currently, that will mean that you have to say what tests dependencies must pass.
+
+tests -> target
+
+module.dependency -> tests
+
+temp, well need a list of tests each module is intended to pass, but later we'll just check thier interface...
+
+
 
 
 
