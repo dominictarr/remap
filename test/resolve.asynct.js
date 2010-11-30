@@ -9,7 +9,6 @@ exports ['resolve.resolveModuleFilename gets the filename and the id of a reques
   resolved.a = resolve.resolveModuleFilename('./.examples/a', module)
   resolved.remap_a = resolve.resolveModuleFilename('remap/test/.examples/a', module)
   resolved.remap = resolve.resolveModuleFilename('remap', module)
-  console.log(resolved)
   
   test.finish()
 }
@@ -22,7 +21,6 @@ exports ['resolve.resolveModuleLookupPaths gets the id and paths of a request'] 
   resolved.a = resolve.resolveModuleLookupPaths('./.examples/a', module)
   resolved.remap_a = resolve.resolveModuleLookupPaths('remap/test/.examples/a', module)
   resolved.remap = resolve.resolveModuleLookupPaths('remap', module)
-  console.log(resolved)
   
   test.finish()
 }

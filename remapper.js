@@ -1,0 +1,65 @@
+//remapper
+
+var modules = require('remap/modules')
+  , resolve = require('remap/resolve')
+  , log = console.log
+  , inspect = require('inspect')
+module.exports = Remapper
+
+
+function Remapper (_module,remaps){
+  var self = this
+  modules = modules.useCache({})
+
+function Maker (depends,loaded,remaps){
+  var self = this
+  var _depends = {}
+    loaded = loaded || {}
+
+  self.resolve = function (request,module){
+      log("request = ", request)
+    if(remaps[request]){
+      log("REMAP :", request, " -> ", remaps[request])
+      request = remaps[request]
+    }
+    return resolve.resolveModuleFilename(request,module)
+  }
+
+  self.load = function (id, filename, parent, makeR ){
+    if(!loaded[id])
+      loaded[id] = {}
+      if(loaded[parent.id]){
+        loaded[parent.id][id] = loaded[id]
+      }
+        
+      return modules.defaultLoad(id, filename, parent, makeR)
+  }
+
+  self.make = function (thisModule){
+    var id = thisModule.id
+    depends[id] = loaded[id]
+    
+    return modules.makeMake(new Maker(loaded[id],loaded,remaps))(thisModule)  
+  }
+}
+
+ /**
+  * the dependencies loaded through require.
+  *
+  * depends is easier to spell than dependencies
+  */
+
+  self.depends = {} //the 
+  self.loaded = {} //the 
+  self.remaps = remaps || {} //the 
+
+  self.require = make()
+
+  console.log("remaps")
+  console.log(self.remaps)
+
+  function make(){
+    return modules.makeMake(new Maker(self.depends,self.loaded,self.remaps))(_module)
+  }
+
+}

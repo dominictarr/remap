@@ -1,7 +1,7 @@
 
 var path = require('path')
   , resolve = require('./resolve')
-  , make_require = require('./loading')
+  , loading = require('./loading')
   , assert = require('assert')
 
   var registerExtension = function(){console.log('require.registerExtension() removed. Use require.extensions instead');}
@@ -16,19 +16,19 @@ function useCache(moduleCache) {
     newExports[i] = exports[i]
   }
   newExports.loadModule = function (request,parent,make) {
-    return make_require.loadModule(request,parent,make,moduleCache)
+    return loading.loadModule(request,parent,make,moduleCache)
   }
   newExports.defaultLoad = function (id,filename,parent,make) {
-    return make_require.defaultLoad(id,filename,parent,make,moduleCache)
+    return loading.defaultLoad(id,filename,parent,make,moduleCache)
   }
   newExports.mamake = function (resolve,load,make){
-    return  make_require.mamake (resolve,load,make,moduleCache)
+    return  loading.mamake (resolve,load,make,moduleCache)
   }
   newExports.makeRequire = function (module,tools){
-    return make_require.makeRequire(module,initTools(tools))
+    return loading.makeRequire(module,initTools(tools))
   }
   newExports.makeMake = function (tools){
-    return make_require.makeMake(initTools(tools))
+    return loading.makeMake(initTools(tools))
   }
 
   function initTools(tools){

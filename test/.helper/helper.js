@@ -4,6 +4,12 @@ function test_a (a,test){
     test.equal(a.version, "v0.0.0")
     test.equal(a.__filename, require.resolve('../.examples/a'))
 }
+function test_a2 (a,test){
+    test.equal(a.a(), "A is for Aardvark")
+    test.equal(a.version, "v0.0.1")
+}
+
+
 function test_b (b,test){
     test.equal(b.b(), "B is for Banana")
     test.equal(b.next(), "C is for Chicken")
@@ -24,9 +30,9 @@ function looksLikeRequire(r,test){
     }
 }
 
-
 module.exports = {
   test_a: test_a
+, test_a2: test_a2
 , test_b: test_b
 , looksLikeRequire: looksLikeRequire
 }

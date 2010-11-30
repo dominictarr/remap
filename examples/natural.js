@@ -3,7 +3,7 @@
 /*this passes the test, but is obviously broken!*/
 
 
-console.log("LOAD " + __filename)
+//console.log("LOAD " + __filename)
 exports.n = function (n){
 
   if(n == 1)

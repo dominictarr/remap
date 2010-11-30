@@ -1,7 +1,3 @@
-//make_require
-
-
-//exports.useCache = useCache
 
 var internalModuleCache = {}
   , debug = require('./common').debug
@@ -14,23 +10,16 @@ var internalModuleCache = {}
   exports.makeMake = makeMake
   exports.makeRequire = makeRequire
 
-  //exports.useCache = useCache
-
   var natives = process.binding('natives'); //refactor this out to call require
     // remove this...>>>
 
   function loadNative (id) {
-//    console.log("loadNative")
-//    console.log(id)
     
     var m = new Module(id);
     internalModuleCache[id] = m;
     m.require = makeRequire(m,{cache: require.cache})
-    /*= function (request){
-      console.log("LOAD NATIVE!" + id)
-      console.log(request)
-    }*/
-    var e = m._compile(natives[id], id+".js");
+
+    var e = m._compile(getNative(id), id+".js");
     if (e) throw e; // error compiling native module
     return m;
   }
@@ -38,8 +27,8 @@ var internalModuleCache = {}
   exports.requireNative = requireNative;//this doesn't appear to be used anywhere....
 
   function requireNative (id) {
-    if (internalModuleCache[id]) return internalModuleCache[id].exports;
-    if (!natives[id]) throw new Error('No such native module ' + id);
+    if (internalModuleCache.hasOwnProperty(id) && internalModuleCache[id]) return internalModuleCache[id].exports;
+    if (!getNative(id)) throw new Error('No such native module ' + id);
     return loadNative(id).exports;
   }
 
@@ -63,11 +52,11 @@ var internalModuleCache = {}
 //    console.log("CACHE (loadResolvedModule):" + moduleCache)
     assert.ok(moduleCache,"loadResolvedModule needs a moduleCache")
     // remote this...>>>
-    var cachedNative = internalModuleCache[id];
+    var cachedNative = internalModuleCache.hasOwnProperty(id) && internalModuleCache[id];
     if (cachedNative) {
       return cachedNative;
     }
-    if (natives[id]) {
+    if (getNative(id)) {
       debug('load native module ' + id);
       return loadNative(id);
     }
@@ -107,16 +96,22 @@ var internalModuleCache = {}
     }
     
     function makeMake(tools){
-      return function (module) {return makeRequire(module,tools)}
+      return function (module) {
+      //console.log(tools)
+      return makeRequire(module,tools)}
     }
+    
+      function getNative(request){
+    return natives.hasOwnProperty(request) && natives[request]
+  }
+
     
     function makeRequire(module,tools){
       tools = tools || {}//what if I put tools into 
       tools.resolve = tools.resolve || resolve.resolveModuleFilename
       tools.load = tools.load || defaultLoad //(id,filename,parent,makeR,moduleCache)
       tools.make = tools.make || makeMake({cache: tools.cache})
-//      tools.cache = tools.cache || cache
-//      console.log("CACHE (makeRequire):" + tools.cache)
+
       assert.ok(tools.cache,"makeRequire needed a tools.cache")
       assert.ok(tools.make,"makeRequire needed a tools.make")
 

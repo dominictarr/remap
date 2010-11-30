@@ -30,6 +30,50 @@ git forks running automagicially.
 
 */
 
+/*
+was going to refactor so the resolve works through Resolve object, 
+which is initialized with optionally paths, parent module, extensions, local directory. etc.
+*/
+/*
+  exports.Resolver = Resolver
+  
+  function Resolver(options){
+    if(!(this instanceof Resolver)) return new Resolver(options)
+  
+    options = options || {}
+  
+    console.log(options.paths)
+    
+    this.paths = options.paths || (process.env.NODE_PATH ? process.env.NODE_PATH.split(":") : [])
+    
+    this.extensions = options.extensions || Object.keys(require.extensions)
+  
+    this.parent = options.parent || require.main  
+
+  }
+
+  Resolver.prototype.resolve = function (request){
+    var resolvedModule,id,paths
+    
+    if (getNative(request)) return [request, request];//fs http net, etc.
+    if (this.parent){
+      resolvedModule = resolveModuleLookupPaths(request, parent)
+      id             = resolvedModule[0]
+      paths          = resolvedModule[1].concat(this.paths)
+    } else {
+      paths = this.paths
+    }
+
+    debug("looking for " + JSON.stringify(id) + " in " + JSON.stringify(paths));
+    var filename = findModulePath(request, paths,_extensions);
+    if (!filename) {
+      throw new Error("Cannot find module '" + request + "', from: " + path.dirname(parent.filename));
+    }
+    return [id, filename];
+  }
+
+  }
+*/ 
   var modulePaths = [];
   exports.modulePaths = modulePaths
   if (process.env.NODE_PATH) {
@@ -121,7 +165,7 @@ git forks running automagicially.
   
   function resolveModuleId (request,parent){
 
-    if (natives[request]) return request;
+    if (getNative(request)) return request;
 
     if (request.charAt(0) === '/') {
       return request;
@@ -149,8 +193,7 @@ git forks running automagicially.
   exports.resolveModuleLookupPaths = resolveModuleLookupPaths
   // sync - no i/o performed
   function resolveModuleLookupPaths (request, parent) {
-
-    if (natives[request]) return [request, []];
+    if (natives.hasOwnProperty(request) && getNative(request)) return [request, []];
 
     if (request.charAt(0) === '/') {
       return [request, ['']];
@@ -166,17 +209,16 @@ git forks running automagicially.
     // Is the parent an index module?
     // We can assume the parent has a valid extension,
     // as it already has been accepted as a module.
-        var isIndex        = /^index\.\w+?$/.test(path.basename(parent.filename)),//check whether parent.filename is index.[EXTENSION]
-        parentIdPath   = isIndex ? parent.id : path.dirname(parent.id),//the name that was require(name) to get parent module.
-        id             = path.join(parentIdPath, request);//absolute path from the relative one.
-        //if parent is an index, then it's id will be the name of the directory it is in.
-        //and since it is relative, there is only be extentions.length places to look for the new file.
+
+    var isIndex        = /^index\.\w+?$/.test(path.basename(parent.filename)),//check whether parent.filename is index.[EXTENSION]
+    parentIdPath   = isIndex ? parent.id : path.dirname(parent.id),//the name that was require(name) to get parent module.
+    id             = path.join(parentIdPath, request);//absolute path from the relative one.
+    //if parent is an index, then it's id will be the name of the directory it is in.
+    //and since it is relative, there is only be extentions.length places to look for the new file.
 
     // make sure require('./path') and require('path') get distinct ids, even
     // when called from the toplevel js file
     
-
-
     //here is a special case i think the main module gets the id '.'
         
     if (parentIdPath === '.' && id.indexOf('/') === -1) {
@@ -186,9 +228,15 @@ git forks running automagicially.
     return [id, [path.dirname(parent.filename)]];
   }
 
+  function getNative(request){
+    return natives.hasOwnProperty(request) && natives[request]
+  }
+
   exports.resolveModuleFilename = resolveModuleFilename
   function resolveModuleFilename (request, parent,_extensions) {
-    if (natives[request]) return [request, request];//fs http net, etc.
+   // console.log("natives['" + request + "'] == " + !!getNative(request))
+
+    if (natives.hasOwnProperty(request) && getNative(request)) return [request, request];//fs http net, etc.
     var resolvedModule = resolveModuleLookupPaths(request, parent),
         id             = resolvedModule[0],
         paths          = resolvedModule[1];

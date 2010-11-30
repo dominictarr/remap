@@ -23,9 +23,6 @@ exports['loads a module with different module, require'] = function (test){
     , mirror2 = require('./.examples/mirror')
     
   test.ok(mirror.require)
-  console.log("MIRROR")
-  console.log(mirror)
-  
   test.ok(mirror.__filename)
   test.ok(mirror.__dirname)
   test.ok(mirror.module)
@@ -162,8 +159,7 @@ exports ['modules should load children into the same cache'] = function (test){
 
   var b_module = cache[require2.resolve('./.examples/b')]
     , c_module = cache[require2.resolve('./.examples/c')]
-  console.log(cache)
-    
+   
   test.strictEqual(b,b_module.exports)
   test.strictEqual(b.next,c_module.exports.c)
     

@@ -28,8 +28,8 @@ function makeRemap (baseid){
   }
 
   remap.resolve = function(id){
-    console.log("resolve(" + id + ")");
-    console.log("maps:" + inspect(maps));
+//    console.log("resolve(" + id + ")");
+//    console.log("maps:" + inspect(maps));
 
     if (maps[id]){
       id = maps[id]

@@ -83,6 +83,7 @@ exports['mamake can replace resolve'] = function (test){
     , require2 = makeRequire(module)
     , calls = 0
     , res = newResolve('./.examples/a',module)
+    
     test.equal(calls,1)
     test.equal(res.length,2)
     test.equal(res[1],require.resolve('./.examples/b'))
@@ -99,10 +100,7 @@ exports['mamake can replace resolve'] = function (test){
     
     function newResolve (request,_module){
       calls++
-    //  require.resolve('./.examples/b')
-/*      test.notEqual(_module.parent,module,"new resolve should be passed parent module")
-      test.equal(_module,module,"new resolve should be passed parent module")*/
-      console.log("reResonve:" + request + " module" + _module.id)
+
       return resolve.resolveModuleFilename('./.examples/b',module)//_?
     }
 }
@@ -155,7 +153,7 @@ exports ['mamake can create can change make on the way down'] = function (test){
     test.finish()
     function load2(id, filename, parent, makeR,cache){
       test.equal(filename,require.resolve('./.examples/c'))
-      console.log(makeR)
+
       clearTimeout(timer)
       loadCalled = true;
       return modules2.defaultLoad(id, filename, parent, makeR,cache)
@@ -186,10 +184,6 @@ exports['makeMake can replace resolve'] = function (test){
     
     function newResolve (request,_module){
       calls++
-    //  require.resolve('./.examples/b')
-/*      test.notEqual(_module.parent,module,"new resolve should be passed parent module")
-      test.equal(_module,module,"new resolve should be passed parent module")*/
-      console.log("reResonve:" + request + " module" + _module.id)
       return resolve.resolveModuleFilename('./.examples/b',module)//_?
     }
 }
@@ -242,7 +236,7 @@ exports ['makeMake can create can change make on the way down'] = function (test
     test.finish()
     function load2(id, filename, parent, makeR,cache){
       test.equal(filename,require.resolve('./.examples/c'))
-      console.log(makeR)
+
       clearTimeout(timer)
       loadCalled = true;
       return modules2.defaultLoad(id, filename, parent, makeR,cache)
