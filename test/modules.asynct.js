@@ -6,15 +6,13 @@ var modules =  require('remap/modules')
 ; // a semi-colon for Ryan Gahl
 
 //var Xexports = {}
-  
+
 exports['Require2 can load a module'] = function (test){
 
   var a1 = require2('./.examples/a')
 
   test.finish()
 }
-
-
 
 exports['loads a module with different module, require'] = function (test){
 
@@ -60,15 +58,14 @@ exports['modules.loadModule accepts a function which is assigned to module and c
       return r
     }
 
-      /*  applications of this crazy module:
-          1. reroute resolve, so that it loads a different module.
-          2. return before calling loadModule, i.e. return a mock instead.
-          3. modify module loaded. 
-            i.e. wrap it and record what is called.
-            or wrap all db queries in a transaction and revert it after the test. 
-          4. change the makeRequire method for children...
-      */
-
+    /*  applications of this crazy module:
+        1. reroute resolve, so that it loads a different module.
+        2. return before calling loadModule, i.e. return a mock instead.
+        3. modify module loaded. 
+          i.e. wrap it and record what is called.
+          or wrap all db queries in a transaction and revert it after the test. 
+        4. change the makeRequire method for children...
+    */
 }
 
 exports['modules can uncache a loaded module'] = function (test){

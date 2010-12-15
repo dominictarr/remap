@@ -48,6 +48,7 @@ var internalModuleCache = {}
   };
 
   function loadResolvedModule (id,filename,parent,makeR,moduleCache){
+//  console.log("::::::::: load " + id + "::::::::::")
     //moduleCache = moduleCache || cache
 //    console.log("CACHE (loadResolvedModule):" + moduleCache)
     assert.ok(moduleCache,"loadResolvedModule needs a moduleCache")

@@ -60,8 +60,6 @@ exports ['can remap the dependencies of a single require()'] = function (test){
   test.finish()
 }
 
-
-
 exports ['can remap the dependencies of multiple require()s'] = function (test){
 
   var remaps = {'./c': './a' }

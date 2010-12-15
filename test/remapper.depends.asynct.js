@@ -9,7 +9,7 @@ var Remapper = require('remap/remapper')
   , describe = require('should').describe
   , helper = require('./.helper/helper')
   , inspect = require('util').inspect //require('inspect')
-  , log = console.log
+  , log = require('logger')  
   , a_fn = 'remap/test/.examples/a'
   , b_fn = 'remap/test/.examples/b'
   , c_fn = 'remap/test/.examples/c'
@@ -123,6 +123,9 @@ exports ['can retrive the dependencies of multiple require()s (more complex)'] =
   shouldLoaded(r,'remap/test/.examples/a',a)
   shouldLoaded(r,'remap/test/.examples/d',d)
   shouldLoaded(r,'remap/test/.examples/e',e)
+
+  log('depends\n',r.depends)
+    
 
   shouldDepends(r,e_fn,depends,loaded)
 
