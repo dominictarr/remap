@@ -10,8 +10,6 @@ module.exports = Remapper
 function Remapper (_module,remaps){
   var self = this
   modules = modules.useCache({})
-  self.flatLoaded = [1,2,3]
-  var super = self
   
 function Maker (depends,loaded,remaps){
   var self = this
@@ -20,10 +18,17 @@ function Maker (depends,loaded,remaps){
 
   self.resolve = function (request,module){
     if(remaps.hasOwnProperty(request) && remaps[request]){
-//      log("REMAP :", request, " -> ", remaps[request])
       request = remaps[request]
     }
-    return resolve.resolveModuleFilename(request,module)
+    var resolved = resolve.resolveModuleFilename(request,module)
+    log(resolved[0])
+    
+    //if the remap is absolute, it may need to be re-resolved.
+    
+    if(remaps.hasOwnProperty(resolved[0]) && remaps[resolved[0]])
+      return resolve.resolveModuleFilename(remaps[resolved[0]],module)
+
+    return resolved
   }
 
   self.load = function (id, filename, parent, makeR ){
@@ -31,11 +36,6 @@ function Maker (depends,loaded,remaps){
     if(!loaded[id]) { loaded[id] = {} }
 
     if(loaded[parent.id]) { loaded[parent.id][id] = loaded[id] }
-
-    if(-1 == super.flatLoaded.indexOf(id)){
-      console.log("ID",id)
-      super.flatLoaded.push(id)
-      }
 
     return modules.defaultLoad(id, filename, parent, makeR)
   }
