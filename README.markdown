@@ -1,63 +1,55 @@
 
-#Remap - reroute require for mocks, wrappers, or shenanigans#
+#remap - reroute require for mocks, wrappers, or shenanigans#
 
-this module allows you to modify the behaviour of require so that you can
+open up node's module loading code and gives you control of what is happening.
 
-1. redirect require.resolve so a request may return a different module
-2. modify loading so that you can return a mock, or a modify/wrap a module.
-3. control the behaviour of require at different levels of depth...
-4. load modules into a new cache, so the same module can be loaded multiple times. for example, run a test multiple times with different implementations of specific dependencies each time.
+##basic examples##
 
-this is largely composed by copy/pasting from github.com/ry/node/src/node.js and spliting it into multiple modules, adding exports, refactoring, testing and adding as little as possible!
+    var modules = require ('remap/modules')
+      , require2 = modules.makeRequire(module) //must pass in your module.
 
-this is still very hacky! 
+    var x require2('path/to/module/x')
+    
+x is the same as if you loaded it with require()
+x can load sub modules, and will see a require function. 
+but it will be a require function created by remap.
 
-thanks for reading.
+makeRequire has a second argument, `makeRequire(module,tools)` which is a map
+to functions to use for the main parts of require's task:
 
+    { 
+      //resolve: called before load. returns [id,path/to/module]
+      resolve: function (request,_module){
+        return resolve.resolveModuleFilename(request,_module)
+      }//_module is module doing the requesting.
+      
+      //load: returns the new module's exports. insert mocks & wrappers here.
+    , load: function (id, filename, parent, makeRequire,cache) {
+        return modules.defaultLoad(id,filename,parent,makeRequire)
+      }
 
-|||||||||||||||||||
+      //make: is called by default load, should return a new makeRequire 
+      //that will be used by children of newModule.
+    , make: function (newModule){
+        //returns a makeRequire function for the newly loaded module
+        return modules.makeMake(newModule, tools)
+      }
+    }
 
-okay, written a simple multi tester, which takes a test, it's target, and a candidate... 
-it runs the candidate through the test and calls back with the result.
+also, there is remap/remapper, which eases the pain for some tasks:
 
-I'll split this out into another module, which depends on remap
+    var remapper = new Remapper(module,{
+      'path/module-a':'newpath/module-b' 
+    //, ...
+    })
+    remapper.require('path/module-a') // will load 'newpath/module-b' instead.
+    
+remapper can also tell you the dependency tree of the module's it's loaded.
 
-I'll need a manifest file which defines the targets of each test, 
-(and which test format they use...eventually)
+    remapper.depends
+    
+this was composed by copy/pasting from github.com/ry/node/src/node.js and spliting it into multiple modules, adding exports, refactoring, testing and adding as little as possible.
 
-and a package.json which defines which tests files need to pass.
+I'll be the first to admit that alot of the code in here is a bit ugly, 
+and further development will be forth coming...
 
-i.e something somewhere needs to say that natural2 should pass natural.asynct & natural.random.asynct
-
-currently, that will mean that you have to say what tests dependencies must pass.
-
-tests -> target
-
-module.dependency -> tests
-
-temp, well need a list of tests each module is intended to pass, but later we'll just check thier interface...
-
-
-
-
-
-/*
-some module loading ...
-
-> rm = new module.constructor('rm',module)
-> rm.load('/home/dominic/code/node/remap/test/./remap.asynct.js')
-> rm.exports
-{ 'Change what require will resolve': [Function],
-  'load two different modules through one name by remapping': [Function] }
-
-...will have to drag out the module code though, and open it up a little...
-
-hell, can even assign what i like to 
-
-require.cache
-
->require.cache[rm.filename] = rm
-
-this is what I came here for.
-
-*/

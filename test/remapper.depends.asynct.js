@@ -14,6 +14,8 @@ var Remapper = require('remap/remapper')
   , b_fn = 'remap/test/.examples/b'
   , c_fn = 'remap/test/.examples/c'
   , e_fn = 'remap/test/.examples/e'
+
+
 function getRemapper(){
   var r = new Remapper(module)
   
@@ -25,6 +27,8 @@ function getRemapper(){
 
   return r
 }
+
+
 function shouldDepends(r,fn,depends,loaded){
   var it = 
     describe(r.depends,'the dependencies of \'' + fn + '\'')
@@ -66,7 +70,8 @@ exports ['can retrive the dependencies of multiple require()s'] = function (test
       {'remap/test/.examples/c': {} } }
 
   var loaded = 
-    { 'remap/test/.examples/b': {'remap/test/.examples/c': {} } 
+    { 'remap/test/.examples/b': 
+      { 'remap/test/.examples/c': {} } 
     , 'remap/test/.examples/c': {} }
 
   var it = 
@@ -79,9 +84,9 @@ exports ['can retrive the dependencies of multiple require()s'] = function (test
 
   test.finish()
 }
+
 /*
   make a more interesting tree-like example...
-  
 */
 
 function shouldLoaded(r,fn,loaded){

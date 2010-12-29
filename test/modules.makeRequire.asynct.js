@@ -56,9 +56,9 @@ exports ['can change the require method for child modules'] = function (test){
   maybe refactor all the require stuff into another module?
   
   mamake(resolve,make,require){
-    
   }
 */
+
 exports['mamake can make a normal makeRequire'] = function (test){
   var cache = {}
     , makeRequire = modules.useCache(cache).mamake()
@@ -104,6 +104,7 @@ exports['mamake can replace resolve'] = function (test){
       return resolve.resolveModuleFilename('./.examples/b',module)//_?
     }
 }
+
 
 exports['mamake can replace load'] = function (test){
   var cache = {}
@@ -151,7 +152,7 @@ exports ['mamake can create can change make on the way down'] = function (test){
     helper.test_b(b,test)
     test.ok(loadCalled,"expected replaced load to have been called")
     test.finish()
-    function load2(id, filename, parent, makeR,cache){
+    function load2(id, filename, parent, makeR,cache) {
       test.equal(filename,require.resolve('./.examples/c'))
 
       clearTimeout(timer)

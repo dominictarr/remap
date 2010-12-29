@@ -21,7 +21,7 @@ function Maker (depends,loaded,remaps){
       request = remaps[request]
     }
     var resolved = resolve.resolveModuleFilename(request,module)
-    log(resolved[0])
+    //log(resolved[0])
     
     //if the remap is absolute, it may need to be re-resolved.
     
