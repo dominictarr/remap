@@ -87,14 +87,15 @@ function Maker (depends,loaded,remaps){
   */
 
   self.depends = {} //the 
+  self.depends[_module.id] = {}
   self.loaded = {} //the 
   self.remaps = remaps || {} //the 
 
-  self.loaded[_module.id] = self.depends
+  self.loaded[_module.id] = self.depends[_module.id]
   self.require = make()
 
   function make(){
-    return modules.makeMake(new Maker(self.depends,self.loaded,self.remaps))(_module)
+    return modules.makeMake(new Maker(self.depends[_module.id],self.loaded,self.remaps))(_module)
   }
 
 }

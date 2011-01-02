@@ -3,6 +3,7 @@
 exports.shouldLoaded = shouldLoaded
 exports.shouldDepends = shouldDepends
 exports.shouldRemap = shouldRemap
+exports.branches = branches
 
 var a_fn = 'remap/test/.examples/a'
   , b_fn = 'remap/test/.examples/b'
@@ -37,11 +38,11 @@ function shouldLoaded(r,fn,loaded){
 function shouldDepends(r,fn,depends,loaded){
   var it = 
     describe(r.depends,'the dependencies of \'' + fn + '\'')
-    it.should.have.key(fn)
     it.should.eql(depends)
 
   var it = 
     describe(r.loaded,'modules loaded under \'' + fn + '\'')
+    it.should.have.property(fn)
     it.should.eql(loaded)
 }
 

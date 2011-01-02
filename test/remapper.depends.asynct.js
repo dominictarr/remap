@@ -14,7 +14,7 @@ var Remapper = require('remap/remapper')
   , b_fn = 'remap/test/.examples/b'
   , c_fn = 'remap/test/.examples/c'
   , e_fn = 'remap/test/.examples/e'
-
+  , remapHelp = require('remap/test/.helper/remap-helper')
 
 function getRemapper(){
   var r = new Remapper(module)
@@ -28,34 +28,47 @@ function getRemapper(){
   return r
 }
 
+function shouldLoaded(r,fn,loaded){
+  describe(r.loaded, "loaded modules")
+    .should.have.property(fn)
+  describe(r.loaded[fn], "loaded modules under " + fn)
+    .should.eql(loaded)
+}
 
 function shouldDepends(r,fn,depends,loaded){
   var it = 
     describe(r.depends,'the dependencies of \'' + fn + '\'')
-    it.should.have.key(fn)
-    it.should.eql(depends)
+  it.should.eql(depends)
 
   var it = 
     describe(r.loaded,'modules loaded under \'' + fn + '\'')
-    it.should.eql(loaded)
+  it.should.have.property(fn)
+  it.should.eql(loaded)
 }
 
-
+function deps(depends){
+var d = {}  
+  d[module.id] = depends
+  return d
+}
+function loads(depends){
+  return d
+}
 exports ['can retrive the dependencies of a single require()'] = function (test){
 
   var r = getRemapper()
     , a = r.require(a_fn)
+    , A
 
   helper.test_a(a,test)  
 
-  var depends = {'remap/test/.examples/a': {} }
-  var loaded = depends
+  var depends = deps({'remap/test/.examples/a': A = {} })
+  var loaded = remapHelp.branches(depends)
 
   shouldDepends(r,a_fn,depends,loaded)
 
   test.finish()
 }
-
 
 
 exports ['can retrive the dependencies of multiple require()s'] = function (test){
@@ -65,15 +78,12 @@ exports ['can retrive the dependencies of multiple require()s'] = function (test
 
   helper.test_b(b,test)  
 
-  var depends = 
+  var depends = deps(
     {'remap/test/.examples/b': 
-      {'remap/test/.examples/c': {} } }
+      {'remap/test/.examples/c': {} } })
 
-  var loaded = 
-    { 'remap/test/.examples/b': 
-      { 'remap/test/.examples/c': {} } 
-    , 'remap/test/.examples/c': {} }
-
+  var loaded = remapHelp.branches(depends)
+  
   var it = 
     describe(r.depends,'the dependencies of \'' + b_fn + '\'')
     it.should.eql(depends)
@@ -89,12 +99,6 @@ exports ['can retrive the dependencies of multiple require()s'] = function (test
   make a more interesting tree-like example...
 */
 
-function shouldLoaded(r,fn,loaded){
-  describe(r.loaded, "loaded modules")
-    .should.have.property(fn)
-  describe(r.loaded[fn], "loaded modules under " + fn)
-    .should.eql(loaded)
-}
 
 exports ['can retrive the dependencies of multiple require()s (more complex)'] = function (test){
 
@@ -102,23 +106,18 @@ exports ['can retrive the dependencies of multiple require()s (more complex)'] =
     , e = r.require(e_fn)
 
   var a,b,c,d,e
-  var depends = 
+  var depends = deps(
   { 'remap/test/.examples/e':
     e = { 'remap/test/.examples/a': a = {} 
     , 'remap/test/.examples/d': 
       d = { 'remap/test/.examples/a': a } 
     , 'remap/test/.examples/b': 
-      b = { 'remap/test/.examples/c': c = {} } } }
+      b = { 'remap/test/.examples/c': c = {} } } })
 
-  var loadedIds = 'abcde'.split('').map( function (t) {return 'remap/test/.examples/' + t}).sort()
+  var loaded =  remapHelp.branches(depends)
 
-  var loaded =  //too complicated to test all at once.
-  { 'remap/test/.examples/e': e 
-  , 'remap/test/.examples/a': a 
-  , 'remap/test/.examples/d': d
-  , 'remap/test/.examples/b': b
-  , 'remap/test/.examples/c': c }
-
+  var loadedIds = Object.keys(loaded).sort()
+  
   var it = 
     describe(Object.keys(r.loaded).sort(),'module ids loaded under \'' + e_fn + '\'')
       it.should.eql(loadedIds)

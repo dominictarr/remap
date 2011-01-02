@@ -43,6 +43,11 @@ function doRemap (root,remaps,depends){
 
     remapHelp.shouldRemap (r, root,remaps,depends)
 }
+function deps(depends){
+var d = {}  
+  d[module.id] = depends
+  return d
+}
 
 
 exports ['can remap the dependencies of a single require() simple'] = function (test){
@@ -52,8 +57,8 @@ exports ['can remap the dependencies of a single require() simple'] = function (
 
   helper.test_a2(a,test)  
 
-  var depends = {'remap/test/.examples/a2': {} }
-  var loaded = depends
+  var depends = deps({'remap/test/.examples/a2': {} })
+  var loaded = remapHelp.branches(depends)
 
   remapHelp.shouldDepends(r,'remap/test/.examples/a2',depends,loaded)
 
@@ -64,7 +69,7 @@ exports ['can remap the dependencies of a single require() simple'] = function (
 exports ['can remap the dependencies of a single require()'] = function (test){
   var single = remapHelp.examples.single
 
-  doRemap(single.root,single.remaps,single.depends)
+  doRemap(single.root,single.remaps,deps(single.depends))
 
   test.finish()
 }
@@ -72,9 +77,9 @@ exports ['can remap the dependencies of a single require()'] = function (test){
 exports ['can remap the dependencies of multiple require()s '] = function (test){
   var multiple = remapHelp.examples.multiple
 
-  doRemap(multiple.root,multiple.remaps,multiple.depends)
+  doRemap(multiple.root,multiple.remaps,deps(multiple.depends))
 
-  doRemap(multiple.root,multiple.remapsAbs,multiple.depends)
+  doRemap(multiple.root,multiple.remapsAbs,deps(multiple.depends))
 
   test.finish()
 }
@@ -82,9 +87,9 @@ exports ['can remap the dependencies of multiple require()s '] = function (test)
 exports ['can remap the dependencies of multiple require()s (more complex) '] = function (test){
   var complex = remapHelp.examples.complex
 
-  doRemap(complex.root,complex.remaps,complex.depends)
+  doRemap(complex.root,complex.remaps,deps(complex.depends))
 
-  doRemap(complex.root,complex.remapsAbs,complex.depends)
+  doRemap(complex.root,complex.remapsAbs,deps(complex.depends))
 
   test.finish()
 }
@@ -94,8 +99,8 @@ exports['can remap the dependencies of multiple require()s (more complex) more t
 
   var complex2 = remapHelp.examples.complex2
 
-  doRemap(complex2.root, complex2.remaps, complex2.depends)
-  doRemap(complex2.root, complex2.remapsAbs, complex2.depends)
+  doRemap(complex2.root, complex2.remaps, deps(complex2.depends))
+  doRemap(complex2.root, complex2.remapsAbs, deps(complex2.depends))
 
   test.finish()
 }
