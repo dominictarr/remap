@@ -51,9 +51,6 @@ var d = {}
   d[module.id] = depends
   return d
 }
-function loads(depends){
-  return d
-}
 exports ['can retrive the dependencies of a single require()'] = function (test){
 
   var r = getRemapper()
