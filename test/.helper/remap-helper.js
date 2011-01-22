@@ -11,7 +11,7 @@ var a_fn = 'remap/test/.examples/a'
   , e_fn = 'remap/test/.examples/e'
   , describe = require('should').describe
   , inspect = require('util').inspect //require('inspect')
-  , traverser = require('traverser/traverser2')
+  , traverser = require('traverser')
 
 
 function branches(depends){

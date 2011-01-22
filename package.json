@@ -1,0 +1,20 @@
+{
+  "name": "remap",
+  "description": "inject wrappers, mocks and new modules through 'require'",
+  "version": "0.0.0",
+  "homepage": "https://github.com/dominictarr/remap",
+  "repository": "git://github.com/dominictarr/remap.git",
+  "author": "Dominic Tarr <dominic.tarr@gmail.com>",
+  "main":"remapper",
+  "modules":{
+    "loading":"./loading"
+  , "modules":"./modules"
+  , "resolve":"./resolve"
+  },
+  "directories": {
+    "lib":"./"
+  },
+  "engines": {
+    "node": "*"
+  }
+}

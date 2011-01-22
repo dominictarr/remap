@@ -5,10 +5,44 @@ open up node's module loading code and gives you control of what is happening.
 
 ##basic examples##
 
+load a module, but replace specific modules with a different implementation:
+
+    var Remapper = require ('remap')
+      , remapper = new Remapper(module,{
+      'path/module-a':'newpath/module-b' 
+    //, ...
+    })
+    remapper.require('path/module-a') // will load 'newpath/module-b' instead.
+    
+remapper can also tell you the dependency tree of the module's it's loaded.
+
+    remapper.depends
+
+will give something like:
+
+    { module: 
+      { dependency: 
+        { another: {}
+        , etc:{}
+        }
+      }
+    }
+
+## reloading a module multiple times ##
+
+    var newCache = {}
+      , modules = require ('remap/modules').useCache(newCache)
+      , require2 = modules.makeRequire(module) //must pass in your module.
+      , x = require2('xzy')
+
+    //now x will be cached in newCache, not require.cache
+
+## advanced usage ##
+
     var modules = require ('remap/modules')
       , require2 = modules.makeRequire(module) //must pass in your module.
 
-    var x require2('path/to/module/x')
+    var x = require2('path/to/module/x')
     
 x is the same as if you loaded it with require()
 x can load sub modules, and will see a require function. 
@@ -36,18 +70,6 @@ to functions to use for the main parts of require's task:
       }
     }
 
-also, there is remap/remapper, which eases the pain for some tasks:
-
-    var remapper = new Remapper(module,{
-      'path/module-a':'newpath/module-b' 
-    //, ...
-    })
-    remapper.require('path/module-a') // will load 'newpath/module-b' instead.
-    
-remapper can also tell you the dependency tree of the module's it's loaded.
-
-    remapper.depends
-    
 this was composed by copy/pasting from github.com/ry/node/src/node.js and spliting it into multiple modules, adding exports, refactoring, testing and adding as little as possible.
 
 I'll be the first to admit that alot of the code in here is a bit ugly, 

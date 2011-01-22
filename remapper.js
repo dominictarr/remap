@@ -5,8 +5,8 @@ var modules = require('remap/modules')
   , log = console.log
   , inspect = require('inspect')
   , assert = require('assert')
-module.exports = Remapper
 
+module.exports = Remapper
 
 function Remapper (_module,remaps){
   var self = this
