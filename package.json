@@ -1,14 +1,14 @@
 {
   "name": "remap",
   "description": "inject wrappers, mocks and new modules through 'require'",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "homepage": "https://github.com/dominictarr/remap",
   "repository": "git://github.com/dominictarr/remap.git",
   "author": "Dominic Tarr <dominic.tarr@gmail.com>",
   "main":"remapper",
   "dependencies":{
     "traverser": '*'
-  }
+  },
   "modules":{
     "loading":"./loading"
   , "modules":"./modules"
