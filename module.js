@@ -50,9 +50,6 @@ module.exports = Module
     // remove shebang
     content = content.replace(/^\#\!.*/, '');
 
-//    var newRequire = self.makeRequire ? self.makeRequire(self) : require('./make_require').makeRequire(self)//the cache has to get in here.
-    //why not use assign require to module?
-
     var dirname = path.dirname(filename);
 
     if (contextLoad) {
@@ -124,13 +121,4 @@ module.exports = Module
   extensions['.node'] = function (module, filename) {
     process.dlopen(filename, module.exports);
   };
-
-/*
-  // bootstrap main module.
-  exports.runMain = function () {
-    // Load the main module--the command line argument.
-    process.mainModule = new Module(".");
-    process.mainModule.load(process.argv[1]);
-  };*/
-//  exports.useCache = useCache
 

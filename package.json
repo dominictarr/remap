@@ -6,6 +6,9 @@
   "repository": "git://github.com/dominictarr/remap.git",
   "author": "Dominic Tarr <dominic.tarr@gmail.com>",
   "main":"remapper",
+  "dependencies":{
+    "traverser": '*'
+  }
   "modules":{
     "loading":"./loading"
   , "modules":"./modules"

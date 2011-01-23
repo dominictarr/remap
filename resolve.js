@@ -147,7 +147,7 @@ which is initialized with optionally paths, parent module, extensions, local dir
   //who calls findModulePath? only resolveModuleFilename
 
 /*
-  modulePathWalk is a little strange... i havn't seen anyone using node_modules directories.
+  modulePathWalk is a little strange... i havn't seen anyone using node_modules directories. (correction, they're used by npm)
   it has the effect of adding ./node_modules to the path, ahead of the default paths.
 
 */
@@ -234,7 +234,6 @@ which is initialized with optionally paths, parent module, extensions, local dir
 
   exports.resolveModuleFilename = resolveModuleFilename
   function resolveModuleFilename (request, parent,_extensions) {
-   // console.log("natives['" + request + "'] == " + !!getNative(request))
 
     if (natives.hasOwnProperty(request) && getNative(request)) return [request, request];//fs http net, etc.
     var resolvedModule = resolveModuleLookupPaths(request, parent),
@@ -245,7 +244,7 @@ which is initialized with optionally paths, parent module, extensions, local dir
     debug("looking for " + JSON.stringify(id) + " in " + JSON.stringify(paths));
     var filename = findModulePath(request, paths,_extensions);
     if (!filename) {
-//      console.log(extensions);
+
       throw new Error("Cannot find module '" + request + "', from: " + path.dirname(parent.filename));
     }
     return [id, filename];

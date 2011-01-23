@@ -11,7 +11,6 @@ var internalModuleCache = {}
   exports.makeRequire = makeRequire
 
   var natives = process.binding('natives'); //refactor this out to call require
-    // remove this...>>>
 
   function loadNative (id) {
     
@@ -48,11 +47,9 @@ var internalModuleCache = {}
   };
 
   function loadResolvedModule (id,filename,parent,makeR,moduleCache){
-//  console.log("::::::::: load " + id + "::::::::::")
-    //moduleCache = moduleCache || cache
-//    console.log("CACHE (loadResolvedModule):" + moduleCache)
+
     assert.ok(moduleCache,"loadResolvedModule needs a moduleCache")
-    // remote this...>>>
+
     var cachedNative = internalModuleCache.hasOwnProperty(id) && internalModuleCache[id];
     if (cachedNative) {
       return cachedNative;
@@ -63,7 +60,7 @@ var internalModuleCache = {}
     }
 
     var cachedModule = moduleCache[filename];
-//    console.log("cached?:" + (!!cachedModule));
+
     if (cachedModule) return cachedModule;
     
     var module = new Module(id, parent);
@@ -71,7 +68,7 @@ var internalModuleCache = {}
     makeR = makeR || makeMake({cache:moduleCache})
 
     moduleCache[filename] = module;
-//    console.log("STORE in cache:" + filename);
+
     module.require = makeR.call(module,module);//intercepts creation of require so it can me remapped. called as module, to pass old test.
     module.load(filename);
 
@@ -108,9 +105,9 @@ var internalModuleCache = {}
 
     
     function makeRequire(module,tools){
-      tools = tools || {}//what if I put tools into 
+      tools = tools || {}
       tools.resolve = tools.resolve || resolve.resolveModuleFilename
-      tools.load = tools.load || defaultLoad //(id,filename,parent,makeR,moduleCache)
+      tools.load = tools.load || defaultLoad
       tools.make = tools.make || makeMake({cache: tools.cache})
 
       assert.ok(tools.cache,"makeRequire needed a tools.cache")
@@ -130,9 +127,9 @@ var internalModuleCache = {}
       function finishRequire(newRequire){
         newRequire.paths = resolve.modulePaths;
         newRequire.main = process.mainModule;
-        // Enable support to add extra extension types
+
         newRequire.extensions = require.extensions;
-        // TODO: Insert depreciation warning
+
         newRequire.registerExtension = require.registerExtension;
         newRequire.cache = tools.cache;
         return newRequire;
