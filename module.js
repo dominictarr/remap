@@ -4,7 +4,8 @@ module.exports = Module
   var extensions = require.extensions
     , path = require('path')
     , debug = require('./common').debug
-    , contextLoad = false;
+    , contextLoad = false
+    , assert = require('assert')
     
   if (+process.env["NODE_MODULE_CONTEXTS"] > 0) contextLoad = true;
   var Script;
@@ -25,7 +26,7 @@ module.exports = Module
   Module.prototype.load = function (filename) {
     debug("load " + JSON.stringify(filename) + " for module " + JSON.stringify(this.id));
 
-    process.assert(!this.loaded);
+    assert.ok(!this.loaded);
     this.filename = filename;
 
     /*

@@ -89,6 +89,9 @@ which is initialized with optionally paths, parent module, extensions, local dir
   }
   defaultPaths.push(path.join(process.execPath, "..", "..", "lib", "node"));
 
+  
+  if(!('extensions' in require))
+    require.extensions = {}
   var extensions = Object.keys(require.extensions)
   //  exports.extensions = extensions
 

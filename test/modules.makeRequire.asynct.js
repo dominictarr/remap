@@ -3,7 +3,7 @@ var modules = require('remap/modules')
   , resolve = require('remap/resolve')
   , helper = require('./.helper/helper')
   , Xexports = {}
-  , inspect = require('util').inspect
+  , inspect = require('sys').inspect
   , require2 = modules.makeRequire(module)
   
 //  var modules =  require('remap/modules')

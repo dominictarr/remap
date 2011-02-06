@@ -1,6 +1,6 @@
 var modules =  require('remap/modules')
   , require2 = modules.makeRequire(module)
-  , inspect = require('util').inspect
+  , inspect = require('sys').inspect
   , helper = require('./.helper/helper')
 
 ; // a semi-colon for Ryan Gahl

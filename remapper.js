@@ -2,7 +2,7 @@
 
 var modules = require('remap/modules')
   , resolve = require('remap/resolve')
-  , log = console.log
+  , log = require('logger') //console.log
   , assert = require('assert')
 
 module.exports = Remapper
@@ -10,6 +10,8 @@ module.exports = Remapper
 function Remapper (_module,remaps){
   var self = this
   modules = modules.useCache({})
+  
+//to get NpmRemapper, probably best to just rewrite this.
   
 function Maker (depends,loaded,remaps){
   var self = this
@@ -21,7 +23,7 @@ function Maker (depends,loaded,remaps){
       request = remaps[request]
     }
     var resolved = resolve.resolveModuleFilename(request,module)
-    
+
     if(remaps.hasOwnProperty(resolved[0]) && remaps[resolved[0]])
       return resolve.resolveModuleFilename(remaps[resolved[0]],module)
 

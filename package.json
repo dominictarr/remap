@@ -7,7 +7,7 @@
   "author": "Dominic Tarr <dominic.tarr@gmail.com>",
   "main":"remapper",
   "dependencies":{
-    "traverser": '*'
+    "traverser": "*"
   },
   "modules":{
     "loading":"./loading"

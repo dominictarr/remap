@@ -15,7 +15,7 @@
 var Remapper = require('remap/remapper')
   , describe = require('should').describe
   , helper = require('./.helper/helper')
-  , inspect = require('util').inspect //require('inspect')
+  , inspect = require('sys').inspect //require('inspect')
   , traverser = require('traverser')
   , a_fn = 'remap/test/.examples/a'
   , b_fn = 'remap/test/.examples/b'
